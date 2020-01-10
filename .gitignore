@@ -1,0 +1,5 @@
+# Project exclude paths
+/out/
+
+robot_turtle.iml
+.idea/
