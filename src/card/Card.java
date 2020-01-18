@@ -15,7 +15,7 @@ public class Card {
         return this.name;
     }
 
-    public void playCard(Game game, Player player) {
+    public void playCard(Game game) {
 
     }
 

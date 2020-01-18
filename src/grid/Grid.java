@@ -2,6 +2,7 @@ package grid;
 
 public class Grid {
 
+    String[][] name;
     private Case[][] gameBoard;
 
     public Grid() {

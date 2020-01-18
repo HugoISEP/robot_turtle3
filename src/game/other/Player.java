@@ -40,11 +40,11 @@ public class Player {
         }
     }
 
-    public Player(String name, ColorEnum color, OrientationEnum orientation) {
-        this.nbOfPlayer = ++nbPlayer;
+    public Player(String name, ColorEnum color) {
+        this.nbOfPlayer = nbPlayer++;
         this.name = name;
         this.color = color;
-        this.orientation = orientation;
+        this.orientation = OrientationEnum.SOUTH;
         this.deck = new Deck();
         this.program = new Program();
         this.handCards = new ArrayList<>();
@@ -186,7 +186,12 @@ public class Player {
     public void drawCards() {
         int numberOfHandCards = this.getHandCards().size();
         for (int i = 0; i < 5 - numberOfHandCards; i++) {
-            this.getHandCards().add(this.deck.pickACard());
+            if (this.getPlayerDeck().getDiscard().isEmpty() && this.getPlayerDeck().getDeck().isEmpty()){
+                System.out.println("No more card in the deck");
+            } else {
+                this.getHandCards().add(this.deck.pickACard());
+            }
+
         }
     }
 }

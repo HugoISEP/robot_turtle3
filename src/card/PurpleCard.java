@@ -11,18 +11,18 @@ public class PurpleCard extends Card {
         this.name = "purple card";
     }
 
-    public void playCard(Game game, Player player) {
-        if (player.getOrientation().equals(OrientationEnum.SOUTH)){
-            player.setOrientation(OrientationEnum.WEST);
+    public void playCard(Game gamer) {
+        if (gamer.getCurrentPlayer().getOrientation().equals(OrientationEnum.SOUTH)){
+            gamer.getCurrentPlayer().setOrientation(OrientationEnum.WEST);
         }
-        else if (player.getOrientation().equals(OrientationEnum.EAST)){
-            player.setOrientation(OrientationEnum.SOUTH);
+        else if (gamer.getCurrentPlayer().getOrientation().equals(OrientationEnum.EAST)){
+            gamer.getCurrentPlayer().setOrientation(OrientationEnum.SOUTH);
         }
-        else if (player.getOrientation().equals(OrientationEnum.NORTH)){
-            player.setOrientation(OrientationEnum.EAST);
+        else if (gamer.getCurrentPlayer().getOrientation().equals(OrientationEnum.NORTH)){
+            gamer.getCurrentPlayer().setOrientation(OrientationEnum.EAST);
         }
-        else if (player.getOrientation().equals(OrientationEnum.WEST)){
-            player.setOrientation(OrientationEnum.NORTH);
+        else if (gamer.getCurrentPlayer().getOrientation().equals(OrientationEnum.WEST)){
+            gamer.getCurrentPlayer().setOrientation(OrientationEnum.NORTH);
         }
     }
 

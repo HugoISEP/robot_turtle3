@@ -1,5 +1,7 @@
 package card;
 
+import game.other.Game;
+
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -54,8 +56,8 @@ public class Deck {
     //quand le deck est vide, on le remplit à partir de la défausse
     public void fillDeck(){
         this.deck_for_shuffle.clear();
-        for(Card card : this.discard){
-            this.deck_for_shuffle.add(card);
+        for(int i=0; i < this.discard.size(); i++){
+            this.deck_for_shuffle.add(this.discard.get(i));
         }
         this.discard.clear();
         shuffleDeck();

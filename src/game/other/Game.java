@@ -7,6 +7,7 @@ import grid.Jewel;
 import wall.IceWall;
 import wall.StoneWall;
 
+import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -20,19 +21,22 @@ public class Game {
     private int actionChoice;
     private ArrayList<Case> departurePosition;
     private Grid grid;
-    private StoneWall stoneWall;
-    private Jewel jewel;
+    private ArrayList<Object> jewelsToReach = new ArrayList<>();
+    private ArrayList<Case> casesAlreadyVisited = new ArrayList<>();
+    private int nbCase = 0;
 
     public Game() {
         endGame = false;
-        this.jewel = new Jewel();
-        this.stoneWall = new StoneWall();
         this.grid = new Grid();
         this.departurePosition = new ArrayList<>();
         this.numberOfCurrentPlayer = 0;
         this.winnerPlayer = new Player();
         this.initialization();
         this.getCurrentPlayer().resetNbPlayer();
+    }
+
+    public ArrayList<Object> getJewelsToReach(){
+        return this.jewelsToReach;
     }
 
     public Player[] getPlayers() {
@@ -55,7 +59,7 @@ public class Game {
         return this.winnerPlayer;
     }
 
-    public void setWinnerPlayer(Player player){
+    public void setWinnerPlayer(Player player) {
         this.winnerPlayer = player;
     }
 
@@ -63,8 +67,8 @@ public class Game {
         this.endGame = endGame;
     }
 
-    public void setPlayer(int number, String name, ColorEnum color, OrientationEnum orientation) {
-        this.players[number] = new Player(name, color, orientation);
+    public void setPlayer(int number, String name, ColorEnum color) {
+        this.players[number] = new Player(name, color);
     }
 
     public Player getCurrentPlayer() {
@@ -150,8 +154,7 @@ public class Game {
                 default:
                     color = ColorEnum.GREEN;
             }
-            orientation = OrientationEnum.SOUTH;
-            this.setPlayer(i - 1, name, color, orientation);
+            this.setPlayer(i - 1, name, color);
         }
         this.gameBoardInitialization();
     }
@@ -163,9 +166,9 @@ public class Game {
             this.grid.getCase(5, 0).setContents(this.players[1]);
             this.departurePosition.add(1, this.grid.getCase(5, 0));
             for (int y = 0; y < 8; y++) {
-                this.grid.getCase(7, y).setContents(this.stoneWall);
+                this.grid.getCase(7, y).setContents(new StoneWall());
             }
-            this.grid.getCase(3, 7).setContents(this.jewel);
+            this.grid.getCase(3, 7).setContents(new Jewel());
         }
 
         if (this.numberOfplayer == 3) {
@@ -176,11 +179,11 @@ public class Game {
             this.grid.getCase(6, 0).setContents(this.players[2]);
             this.departurePosition.add(2, this.grid.getCase(6, 0));
             for (int y = 0; y < 8; y++) {
-                this.grid.getCase(7, y).setContents(this.stoneWall);
+                this.grid.getCase(7, y).setContents(new StoneWall());
             }
-            this.grid.getCase(0, 7).setContents(this.jewel);
-            this.grid.getCase(3, 7).setContents(this.jewel);
-            this.grid.getCase(6, 7).setContents(this.jewel);
+            this.grid.getCase(0, 7).setContents(new Jewel());
+            this.grid.getCase(3, 7).setContents(new Jewel());
+            this.grid.getCase(6, 7).setContents(new Jewel());
         }
 
         if (this.numberOfplayer == 4) {
@@ -193,8 +196,8 @@ public class Game {
             this.grid.getCase(7, 0).setContents(this.players[3]);
             this.departurePosition.add(3, this.grid.getCase(7, 0));
 
-            this.grid.getCase(1, 7).setContents(this.jewel);
-            this.grid.getCase(6, 7).setContents(this.jewel);
+            this.grid.getCase(1, 7).setContents(new Jewel());
+            this.grid.getCase(6, 7).setContents(new Jewel());
         }
     }
 
@@ -337,14 +340,214 @@ public class Game {
         return false;
     }
 
+    public int getPlayerPositionX(Player player) {
+        int x = 0;
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                if (this.getGrid().getCase(j, i).getContents() == player) {
+                    x = j;
+                }
+            }
+        }
+        return x;
+    }
+
+    public int getPlayerPositionY(Player player) {
+        int y = 0;
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                if (this.getGrid().getCase(j, i).getContents() == player) {
+                    y = i;
+                }
+            }
+        }
+        return y;
+    }
+
+    public void goToDeparturePosition(Player player) {
+        int positionX = getPlayerPositionX(player), positionY = getPlayerPositionY(player);
+        this.getGrid().getCase(positionX, positionY).setContents(null);
+        player.setOrientation(OrientationEnum.SOUTH);
+        this.getDeparturePosition().get(player.getNbOfPlayer()).setContents(player);
+    }
+
     public void playProgram() {
         for (Card card : this.getCurrentPlayer().getPlayerProgram().getProgram()) {
-            card.playCard(this, getCurrentPlayer());
+            card.playCard(this);
             this.getCurrentPlayer().getPlayerDeck().addCardToDiscard(card);
         }
         this.getCurrentPlayer().getPlayerProgram().resetProgram();
     }
 
+    public boolean turtleAccessToJewel(Case cas) {
+        System.out.println(++nbCase);
+        System.out.println(cas.getPositionX() + " " + cas.getPositionY());
 
+        try {
+            if (!this.casesAlreadyVisited.contains(this.getGrid().getCase(cas.getPositionX() - 1, cas.getPositionY()))) {
+                //si la case n'est pas dans la liste
+                try {
+                    switch (this.getGrid().getCase(cas.getPositionX() - 1, cas.getPositionY()).getContents().getClass().getName()) {
+                        case "game.other.Player":
+                            this.casesAlreadyVisited.add(this.getGrid().getCase(cas.getPositionX() - 1, cas.getPositionY()));
+                            turtleAccessToJewel(this.getGrid().getCase(cas.getPositionX() - 1, cas.getPositionY()));
+                            //on ajoute la case à la liste des cases visitées
+                            //on rappelle la fonction
+                            break;
+                        case "grid.Jewel":
+                            this.jewelsToReach.add(this.getGrid().getCase(cas.getPositionX() - 1, cas.getPositionY()).getContents());
+                            this.casesAlreadyVisited.add(this.getGrid().getCase(cas.getPositionX() - 1, cas.getPositionY()));
+                            turtleAccessToJewel(this.getGrid().getCase(cas.getPositionX() - 1, cas.getPositionY()));
+                            //On ajoute le joyeau à la liste des joyeaux accessibles
+                            //on ajoute la case à la liste des cases visitées
+                            //on rappelle la fonction
+                            break;
+                        case "wall.StoneWall":
+                            //on ne rappelle pas la fonction
+                            break;
+                        case "wall.IceWall":
+                            this.casesAlreadyVisited.add(this.getGrid().getCase(cas.getPositionX() - 1, cas.getPositionY()));
+                            turtleAccessToJewel(this.getGrid().getCase(cas.getPositionX() - 1, cas.getPositionY()));
+                            //on ajoute la case à la liste des cases visitées
+                            //on rappelle la fonction
+                            break;
+                    }
+                } catch (NullPointerException e) {
+                    this.casesAlreadyVisited.add(this.getGrid().getCase(cas.getPositionX() - 1, cas.getPositionY()));
+                    turtleAccessToJewel(this.getGrid().getCase(cas.getPositionX() - 1, cas.getPositionY()));
+                    //on ajoute la case à la liste des cases visitées
+                    //on rappelle la fonction
+                }
+            }
+
+        } catch (Exception e) {
+            //on est hors du plateau
+        }
+
+        try {
+            if (!this.casesAlreadyVisited.contains(this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() - 1))) {
+                //si la case n'est pas dans la liste
+                try {
+                    switch (this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() - 1).getContents().getClass().getName()) {
+                        case "game.other.Player":
+                            this.casesAlreadyVisited.add(this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() - 1));
+                            turtleAccessToJewel(this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() - 1));
+                            //on ajoute la case à la liste des cases visitées
+                            //on rappelle la fonction
+                            break;
+                        case "grid.Jewel":
+                            this.jewelsToReach.add(this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() - 1).getContents());
+                            this.casesAlreadyVisited.add(this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() - 1));
+                            turtleAccessToJewel(this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() - 1));
+                            //On ajoute le joyeau à la liste des joyeaux accessibles
+                            //on ajoute la case à la liste des cases visitées
+                            //on rappelle la fonction
+                            break;
+                        case "wall.StoneWall":
+                            //on ne rappelle pas la fonction
+                            break;
+                        case "wall.IceWall":
+                            this.casesAlreadyVisited.add(this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() - 1));
+                            turtleAccessToJewel(this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() - 1));
+                            //on ajoute la case à la liste des cases visitées
+                            //on rappelle la fonction
+                            break;
+                    }
+                } catch (NullPointerException e) {
+                    this.casesAlreadyVisited.add(this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() - 1));
+                    turtleAccessToJewel(this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() - 1));
+                    //on ajoute la case à la liste des cases visitées
+                    //on rappelle la fonction
+                }
+            }
+        } catch (Exception e) {
+            //on est hors du plateau
+        }
+
+        try {
+            if (!this.casesAlreadyVisited.contains(this.getGrid().getCase(cas.getPositionX() + 1, cas.getPositionY()))) {
+                //si la case n'est pas dans la liste
+                try {
+                    switch (this.getGrid().getCase(cas.getPositionX() + 1, cas.getPositionY()).getContents().getClass().getName()) {
+                        case "game.other.Player":
+                            this.casesAlreadyVisited.add(this.getGrid().getCase(cas.getPositionX() + 1, cas.getPositionY()));
+                            turtleAccessToJewel(this.getGrid().getCase(cas.getPositionX() + 1, cas.getPositionY()));
+                            //on ajoute la case à la liste des cases visitées
+                            //on rappelle la fonction
+                            break;
+                        case "grid.Jewel":
+                            this.jewelsToReach.add(this.getGrid().getCase(cas.getPositionX() + 1, cas.getPositionY()).getContents());
+                            this.casesAlreadyVisited.add(this.getGrid().getCase(cas.getPositionX() + 1, cas.getPositionY()));
+                            turtleAccessToJewel(this.getGrid().getCase(cas.getPositionX() + 1, cas.getPositionY()));
+                            //On ajoute le joyeau à la liste des joyeaux accessibles
+                            //on ajoute la case à la liste des cases visitées
+                            //on rappelle la fonction
+                            break;
+                        case "wall.StoneWall":
+                            //on ne rappelle pas la fonction
+                            break;
+                        case "wall.IceWall":
+                            this.casesAlreadyVisited.add(this.getGrid().getCase(cas.getPositionX() + 1, cas.getPositionY()));
+                            turtleAccessToJewel(this.getGrid().getCase(cas.getPositionX() + 1, cas.getPositionY()));
+                            //on ajoute la case à la liste des cases visitées
+                            //on rappelle la fonction
+                            break;
+                    }
+                } catch (NullPointerException e) {
+                    this.casesAlreadyVisited.add(this.getGrid().getCase(cas.getPositionX() + 1, cas.getPositionY()));
+                    turtleAccessToJewel(this.getGrid().getCase(cas.getPositionX() + 1, cas.getPositionY()));
+                    //on ajoute la case à la liste des cases visitées
+                    //on rappelle la fonction
+                }
+            }
+
+        } catch (Exception e) {
+            //on est hors du plateau
+        }
+
+        try {
+            if (!this.casesAlreadyVisited.contains(this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() + 1))) {
+                //si la case n'est pas dans la liste
+                try {
+                    switch (this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() + 1).getContents().getClass().getName()) {
+                        case "game.other.Player":
+                            this.casesAlreadyVisited.add(this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() + 1));
+                            turtleAccessToJewel(this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() + 1));
+                            //on ajoute la case à la liste des cases visitées
+                            //on rappelle la fonction
+                            break;
+                        case "grid.Jewel":
+                            this.jewelsToReach.add(this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() + 1).getContents());
+                            this.casesAlreadyVisited.add(this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() + 1));
+                            turtleAccessToJewel(this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() + 1));
+                            //On ajoute le joyeau à la liste des joyeaux accessibles
+                            //on ajoute la case à la liste des cases visitées
+                            //on rappelle la fonction
+                            break;
+                        case "wall.StoneWall":
+                            //on ne rappelle pas la fonction
+                            break;
+                        case "wall.IceWall":
+                            this.casesAlreadyVisited.add(this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() + 1));
+                            turtleAccessToJewel(this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() + 1));
+                            //on ajoute la case à la liste des cases visitées
+                            //on rappelle la fonction
+                            break;
+                    }
+                } catch (NullPointerException e) {
+                    this.casesAlreadyVisited.add(this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() + 1));
+                    turtleAccessToJewel(this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() + 1));
+                    //on ajoute la case à la liste des cases visitées
+                    //on rappelle la fonction
+                }
+            }
+        } catch (Exception e) {
+            //on est hors du plateau
+        }
+        return true;
+    }
 }
+
+
+
 

@@ -11,21 +11,13 @@ public class LaserCard extends Card {
         this.name = "laser card";
     }
 
-    public void playCard(Game game, Player player) {
-        int x = 0, y = 0;
+    public void playCard(Game game) {
+        //on récupère les coordonnées du joueur
+        int x = game.getPlayerPositionX(game.getCurrentPlayer()), y = game.getPlayerPositionY(game.getCurrentPlayer());
         String display;
         boolean laserEnd = false, laserReflect = false;
-        //on récupère les coordonnées du joueur
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                if (game.getGrid().getCase(j, i).getContents() == player) {
-                    x = game.getGrid().getCase(j, i).getPositionX();
-                    y = game.getGrid().getCase(j, i).getPositionY();
-                }
-            }
-        }
 
-        if (player.getOrientation().equals(OrientationEnum.NORTH)) {
+        if (game.getCurrentPlayer().getOrientation().equals(OrientationEnum.NORTH)) {
             if (y != 0) {
                 //on parcours la grille à partir de la case au dessus du joueur
                 for (int i = y-1; i >= 0; i--) {
@@ -43,9 +35,7 @@ public class LaserCard extends Card {
                                     if (laserReflect == true) {
                                         //retourne à sa case départ si plus de 2 joueurs
                                         if (game.getPlayer(j).equals(game.getGrid().getCase(x, 7 - i).getContents()) && game.getNumberOfplayer() > 2) {
-                                            game.getGrid().getCase(x, 7 - i).setContents(null);
-                                            game.getPlayer(j).setOrientation(OrientationEnum.SOUTH);
-                                            game.getDeparturePosition().get(j).setContents(game.getPlayer(j));
+                                            game.goToDeparturePosition(game.getPlayer(j));
                                         }
                                         //s'il y a deux joueurs demi-tour
                                         if (game.getPlayer(j).equals(game.getGrid().getCase(x, 7 - i).getContents()) && game.getNumberOfplayer() == 2) {
@@ -67,9 +57,7 @@ public class LaserCard extends Card {
                                     else {
                                         //retourne à sa case départ si plus de 2 joueurs
                                         if (game.getPlayer(j).equals(game.getGrid().getCase(x, i).getContents()) && game.getNumberOfplayer() > 2) {
-                                            game.getGrid().getCase(x, i).setContents(null);
-                                            game.getCurrentPlayer().setOrientation(OrientationEnum.SOUTH);
-                                            game.getDeparturePosition().get(j).setContents(game.getPlayer(j));
+                                            game.goToDeparturePosition(game.getPlayer(j));
                                         }
                                         //s'il y a deux joueurs demi-tour
                                         if (game.getPlayer(j).equals(game.getGrid().getCase(x, i).getContents()) && game.getNumberOfplayer() == 2) {
@@ -108,7 +96,7 @@ public class LaserCard extends Card {
             }
         }
 
-        else if (player.getOrientation().equals(OrientationEnum.SOUTH)) {
+        else if (game.getCurrentPlayer().getOrientation().equals(OrientationEnum.SOUTH)) {
             if (y < 7) {
 
                 for (int i = y + 1; i <= 7; i++) {
@@ -124,9 +112,7 @@ public class LaserCard extends Card {
                                     if (laserReflect == true) {
                                         //retourne à sa case ou change de sens
                                         if (game.getPlayer(j).equals(game.getGrid().getCase(x, 7 - i).getContents()) && game.getNumberOfplayer() > 2) {
-                                            game.getGrid().getCase(x, 7 - i).setContents(null);
-                                            game.getPlayer(j).setOrientation(OrientationEnum.SOUTH);
-                                            game.getDeparturePosition().get(j).setContents(game.getPlayer(j));
+                                            game.goToDeparturePosition(game.getPlayer(j));
                                         }
                                         if (game.getPlayer(j).equals(game.getGrid().getCase(x, 7 - i).getContents()) && game.getNumberOfplayer() == 2) {
                                             if (game.getPlayer(j).getOrientation().equals(OrientationEnum.NORTH)) {
@@ -144,9 +130,7 @@ public class LaserCard extends Card {
                                         }
                                     } else {
                                         if (game.getPlayer(j).equals(game.getGrid().getCase(x, i).getContents()) && game.getNumberOfplayer() > 2) {
-                                            game.getGrid().getCase(x, i).setContents(null);
-                                            game.getCurrentPlayer().setOrientation(OrientationEnum.SOUTH);
-                                            game.getDeparturePosition().get(j).setContents(game.getPlayer(j));
+                                            game.goToDeparturePosition(game.getPlayer(j));
                                         }
                                         if (game.getPlayer(j).equals(game.getGrid().getCase(x, i).getContents()) && game.getNumberOfplayer() == 3) {
                                             if (game.getPlayer(j).getOrientation().equals(OrientationEnum.NORTH)) {
@@ -184,7 +168,7 @@ public class LaserCard extends Card {
             }
         }
 
-        else if (player.getOrientation().equals(OrientationEnum.WEST)) {
+        else if (game.getCurrentPlayer().getOrientation().equals(OrientationEnum.WEST)) {
             if (x != 0) {
 
                 for (int i = x -1; i >= 0; i++) {
@@ -200,9 +184,7 @@ public class LaserCard extends Card {
                                     if (laserReflect == true) {
                                         //retourne à sa case ou change de sens
                                         if (game.getPlayer(j).equals(game.getGrid().getCase(7-i, y).getContents()) && game.getNumberOfplayer() > 2) {
-                                            game.getGrid().getCase(7-i, y).setContents(null);
-                                            game.getPlayer(j).setOrientation(OrientationEnum.SOUTH);
-                                            game.getDeparturePosition().get(j).setContents(game.getPlayer(j));
+                                            game.goToDeparturePosition(game.getPlayer(j));
                                         }
                                         if (game.getPlayer(j).equals(game.getGrid().getCase(7-i, y).getContents()) && game.getNumberOfplayer() == 2) {
                                             if (game.getPlayer(j).getOrientation().equals(OrientationEnum.NORTH)) {
@@ -220,9 +202,7 @@ public class LaserCard extends Card {
                                         }
                                     } else {
                                         if (game.getPlayer(j).equals(game.getGrid().getCase(i, y).getContents()) && game.getNumberOfplayer() > 2) {
-                                            game.getGrid().getCase(i, y).setContents(null);
-                                            game.getCurrentPlayer().setOrientation(OrientationEnum.SOUTH);
-                                            game.getDeparturePosition().get(j).setContents(game.getPlayer(j));
+                                            game.goToDeparturePosition(game.getPlayer(j));
                                         }
                                         if (game.getPlayer(j).equals(game.getGrid().getCase(i, y).getContents()) && game.getNumberOfplayer() == 3) {
                                             if (game.getPlayer(j).getOrientation().equals(OrientationEnum.NORTH)) {
@@ -260,7 +240,7 @@ public class LaserCard extends Card {
             }
         }
 
-        else if (player.getOrientation().equals(OrientationEnum.EAST)) {
+        else if (game.getCurrentPlayer().getOrientation().equals(OrientationEnum.EAST)) {
             if (x < 7) {
 
                 for (int i = x + 1; i <= 7; i++) {
@@ -276,9 +256,7 @@ public class LaserCard extends Card {
                                     if (laserReflect == true) {
                                         //retourne à sa case ou change de sens
                                         if (game.getPlayer(j).equals(game.getGrid().getCase(7-i, y).getContents()) && game.getNumberOfplayer() > 2) {
-                                            game.getGrid().getCase(7-i, y).setContents(null);
-                                            game.getPlayer(j).setOrientation(OrientationEnum.SOUTH);
-                                            game.getDeparturePosition().get(j).setContents(game.getPlayer(j));
+                                            game.goToDeparturePosition(game.getPlayer(j));
                                         }
                                         if (game.getPlayer(j).equals(game.getGrid().getCase(7-i, y).getContents()) && game.getNumberOfplayer() == 2) {
                                             if (game.getPlayer(j).getOrientation().equals(OrientationEnum.NORTH)) {
@@ -296,9 +274,7 @@ public class LaserCard extends Card {
                                         }
                                     } else {
                                         if (game.getPlayer(j).equals(game.getGrid().getCase(i, y).getContents()) && game.getNumberOfplayer() > 2) {
-                                            game.getGrid().getCase(i, y).setContents(null);
-                                            game.getCurrentPlayer().setOrientation(OrientationEnum.SOUTH);
-                                            game.getDeparturePosition().get(j).setContents(game.getPlayer(j));
+                                            game.goToDeparturePosition(game.getPlayer(j));
                                         }
                                         if (game.getPlayer(j).equals(game.getGrid().getCase(i, y).getContents()) && game.getNumberOfplayer() == 3) {
                                             if (game.getPlayer(j).getOrientation().equals(OrientationEnum.NORTH)) {
