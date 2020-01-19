@@ -7,8 +7,8 @@ import grid.Jewel;
 import wall.IceWall;
 import wall.StoneWall;
 
-import java.sql.SQLOutput;
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.Scanner;
 
 public class Game {
@@ -18,20 +18,18 @@ public class Game {
     private int numberOfCurrentPlayer;
     private Player[] players;
     private Player winnerPlayer;
-    private int actionChoice;
     private ArrayList<Case> departurePosition;
     private Grid grid;
     private ArrayList<Object> jewelsToReach = new ArrayList<>();
     private ArrayList<Case> casesAlreadyVisited = new ArrayList<>();
-    private int nbCase = 0;
 
     public Game() {
         endGame = false;
         this.grid = new Grid();
         this.departurePosition = new ArrayList<>();
-        this.numberOfCurrentPlayer = 0;
         this.winnerPlayer = new Player();
         this.initialization();
+        this.numberOfCurrentPlayer = new Random().nextInt(numberOfplayer);
         this.getCurrentPlayer().resetNbPlayer();
     }
 
@@ -75,10 +73,6 @@ public class Game {
         return this.players[this.numberOfCurrentPlayer];
     }
 
-    public int getActionChoice() {
-        return this.actionChoice;
-    }
-
     public Grid getGrid() {
         return this.grid;
     }
@@ -102,7 +96,7 @@ public class Game {
         ArrayList<Integer> colorAlreadyTaken = new ArrayList<>();
         int nbJoueur;
 
-        System.out.println("Combien de joueur êtes-vous ?");
+        System.out.println("How many players are you ?");
         do {
             nbJoueur = scanner.nextInt();
             scanner.nextLine();
@@ -111,18 +105,18 @@ public class Game {
         this.players = new Player[this.numberOfplayer];
         //Création de la liste de joueurs
         for (int i = 1; i <= nbJoueur; i++) {
-            System.out.println("nom du joueur " + i + " :");
+            System.out.println("name of the player " + i + " :");
             String name = scanner.nextLine();
             System.out.println("1 : BLUE\n2 : RED\n3 : PINK\n4 : GREEN");
-            System.out.println("couleur du joueur " + i + " :");
+            System.out.println("color of the player " + i + " :");
             int colorChoice = 1;
             boolean colorTest = false;
             do {
                 if (colorChoice < 1 || colorChoice > 4) {
-                    System.out.println("Votre choix ne correspond pas aux propositions");
+                    System.out.println("Your choice doesn't match with the proposals");
                 }
                 if (colorTest == true) {
-                    System.out.println("La couleur est déjà prise");
+                    System.out.println("the color is already taken");
                 }
                 colorTest = false;
                 colorChoice = scanner.nextInt();
@@ -202,7 +196,6 @@ public class Game {
     }
 
     public void gameBoardDisplay() {
-        int playerCounter = 1;
         System.out.println("Press enter to continue....");
         scanner.nextLine();
         System.out.println("-----PLAYER " + (this.getNumberOfCurrentPlayer() + 1) + "-----");
@@ -232,8 +225,12 @@ public class Game {
             System.out.println();
         }
         for (Player player : this.getPlayers()) {
-            System.out.println("player " + playerCounter + " : " + player.getOrientation());
-            playerCounter++;
+            System.out.println("player " + (player.getNbOfPlayer() +1) + " : " + player.getOrientation() + "  |   position : (" + this.getPlayerPositionX(player)+","+this.getPlayerPositionY(player)+")");
+        }
+        System.out.println();
+        System.out.println("YOUR WALLS : ");
+        for (int i = 0; i < this.getCurrentPlayer().getWallsAvailable().size(); i++) {
+            System.out.println(i + 1 + " : " + this.getCurrentPlayer().getWallsAvailable().get(i).getName());
         }
         System.out.println();
         System.out.println("YOUR HANDCARDS : ");
@@ -245,7 +242,7 @@ public class Game {
 
     public void makeChoice() {
         int choice;
-        boolean returnChoice = false;
+        boolean actionPlayed = false;
         System.out.println("YOUR CHOICE:\n1 : fill your program\n2 : play your program\n3 : build a wall");
         do {
             do {
@@ -256,17 +253,23 @@ public class Game {
             switch (choice) {
                 case 1:
                     this.getCurrentPlayer().fillProgram();
-                    returnChoice = true;
+                    actionPlayed = true;
                     break;
                 case 2:
-                    this.playProgram();
-                    returnChoice = true;
+                    this.getCurrentPlayer().playProgram(this);
+                    actionPlayed = true;
                     break;
                 case 3:
-                    returnChoice = buildWall();
+                    if (this.getCurrentPlayer().canPlayStoneWall() || this.getCurrentPlayer().canPlayIceWall()){
+                        this.getCurrentPlayer().buildWall(this);
+                        actionPlayed = true;
+                    } else {
+                        System.out.println("You don't have any wall, chose another action");
+                        actionPlayed = false;
+                    }
                     break;
             }
-        } while (returnChoice == false);
+        } while (actionPlayed == false);
         if (getCurrentPlayer().getHandCards().size() != 0) {
             System.out.println("Do you want to discard some cards in your hands ?\n1 : yes\n2 : no");
             do {
@@ -277,67 +280,6 @@ public class Game {
                 this.getCurrentPlayer().putHandCardToDiscard();
             }
         }
-    }
-
-    public boolean buildWall() {
-        IceWall iceWall = new IceWall();
-        StoneWall stoneWall = new StoneWall();
-        int choice;
-        int choiceX;
-        int choiceY;
-        boolean correctPlacement = false;
-        System.out.println("1 : build ice wall\n2 : build stone wall\n3 : return to menu");
-        do {
-            choice = this.scanner.nextInt();
-            this.scanner.nextLine();
-        } while (choice < 1 || choice > 2);
-
-        if ((choice == 1 && this.players[this.numberOfCurrentPlayer].playIceWall()) || (choice == 2 && this.players[this.numberOfCurrentPlayer].playStoneWall())) {
-            do {
-                System.out.println("Enter the position: ");
-                System.out.printf("x : ");
-                do {
-                    choiceX = this.scanner.nextInt();
-                    this.scanner.nextLine();
-                } while (choiceX > 7 || choiceX < 0);
-                System.out.printf("y : ");
-                do {
-                    choiceY = this.scanner.nextInt();
-                    this.scanner.nextLine();
-                } while (choiceY > 7 || choiceX < 0);
-                try {
-                    String display = this.getGrid().getCase(choiceX, choiceY).getContents().getClass().getName();
-                    switch (display) {
-                        case "game.other.Player":
-                            correctPlacement = false;
-                            System.out.println("placement impossible, a player is on this case");
-                            break;
-                        case "grid.Jewel":
-                            correctPlacement = false;
-                            System.out.println("placement impossible, a jewel is on this case");
-                            break;
-                        case "wall.StoneWall":
-                            correctPlacement = false;
-                            System.out.println("placement impossible, a stone wall is on this case");
-                            break;
-                        case "wall.IceWall":
-                            correctPlacement = false;
-                            System.out.println("placement impossible, an ice wall is on this case");
-                            break;
-                    }
-                } catch (NullPointerException e) {
-                    if (choice == 1) {
-                        this.grid.getCase(choiceX, choiceY).setContents(iceWall);
-                    }
-                    if (choice == 2) {
-                        this.grid.getCase(choiceX, choiceY).setContents(stoneWall);
-                    }
-                    correctPlacement = true;
-                }
-            } while (correctPlacement == false);
-            return true;
-        }
-        return false;
     }
 
     public int getPlayerPositionX(Player player) {
@@ -365,39 +307,29 @@ public class Game {
     }
 
     public void goToDeparturePosition(Player player) {
-        int positionX = getPlayerPositionX(player), positionY = getPlayerPositionY(player);
-        this.getGrid().getCase(positionX, positionY).setContents(null);
+        this.getGrid().getCase(getPlayerPositionX(player), getPlayerPositionY(player)).setContents(null);
         player.setOrientation(OrientationEnum.SOUTH);
-        this.getDeparturePosition().get(player.getNbOfPlayer()).setContents(player);
+        this.getGrid().getCase(this.getDeparturePosition().get(player.getNbOfPlayer()).getPositionX(), this.getDeparturePosition().get(player.getNbOfPlayer()).getPositionY()).setContents(player);
     }
 
-    public void playProgram() {
-        for (Card card : this.getCurrentPlayer().getPlayerProgram().getProgram()) {
-            card.playCard(this);
-            this.getCurrentPlayer().getPlayerDeck().addCardToDiscard(card);
-        }
-        this.getCurrentPlayer().getPlayerProgram().resetProgram();
-    }
-
-    public boolean turtleAccessToJewel(Case cas) {
-        System.out.println(++nbCase);
-        System.out.println(cas.getPositionX() + " " + cas.getPositionY());
+    public void accessToJewel(Case cas) {
 
         try {
             if (!this.casesAlreadyVisited.contains(this.getGrid().getCase(cas.getPositionX() - 1, cas.getPositionY()))) {
                 //si la case n'est pas dans la liste
+                //si la case est en dehors du plateau on passe au catch
                 try {
                     switch (this.getGrid().getCase(cas.getPositionX() - 1, cas.getPositionY()).getContents().getClass().getName()) {
                         case "game.other.Player":
                             this.casesAlreadyVisited.add(this.getGrid().getCase(cas.getPositionX() - 1, cas.getPositionY()));
-                            turtleAccessToJewel(this.getGrid().getCase(cas.getPositionX() - 1, cas.getPositionY()));
+                            accessToJewel(this.getGrid().getCase(cas.getPositionX() - 1, cas.getPositionY()));
                             //on ajoute la case à la liste des cases visitées
                             //on rappelle la fonction
                             break;
                         case "grid.Jewel":
                             this.jewelsToReach.add(this.getGrid().getCase(cas.getPositionX() - 1, cas.getPositionY()).getContents());
                             this.casesAlreadyVisited.add(this.getGrid().getCase(cas.getPositionX() - 1, cas.getPositionY()));
-                            turtleAccessToJewel(this.getGrid().getCase(cas.getPositionX() - 1, cas.getPositionY()));
+                            accessToJewel(this.getGrid().getCase(cas.getPositionX() - 1, cas.getPositionY()));
                             //On ajoute le joyeau à la liste des joyeaux accessibles
                             //on ajoute la case à la liste des cases visitées
                             //on rappelle la fonction
@@ -407,14 +339,15 @@ public class Game {
                             break;
                         case "wall.IceWall":
                             this.casesAlreadyVisited.add(this.getGrid().getCase(cas.getPositionX() - 1, cas.getPositionY()));
-                            turtleAccessToJewel(this.getGrid().getCase(cas.getPositionX() - 1, cas.getPositionY()));
+                            accessToJewel(this.getGrid().getCase(cas.getPositionX() - 1, cas.getPositionY()));
                             //on ajoute la case à la liste des cases visitées
                             //on rappelle la fonction
                             break;
                     }
                 } catch (NullPointerException e) {
                     this.casesAlreadyVisited.add(this.getGrid().getCase(cas.getPositionX() - 1, cas.getPositionY()));
-                    turtleAccessToJewel(this.getGrid().getCase(cas.getPositionX() - 1, cas.getPositionY()));
+                    accessToJewel(this.getGrid().getCase(cas.getPositionX() - 1, cas.getPositionY()));
+                    //Si c'est une case vide
                     //on ajoute la case à la liste des cases visitées
                     //on rappelle la fonction
                 }
@@ -431,14 +364,14 @@ public class Game {
                     switch (this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() - 1).getContents().getClass().getName()) {
                         case "game.other.Player":
                             this.casesAlreadyVisited.add(this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() - 1));
-                            turtleAccessToJewel(this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() - 1));
+                            accessToJewel(this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() - 1));
                             //on ajoute la case à la liste des cases visitées
                             //on rappelle la fonction
                             break;
                         case "grid.Jewel":
                             this.jewelsToReach.add(this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() - 1).getContents());
                             this.casesAlreadyVisited.add(this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() - 1));
-                            turtleAccessToJewel(this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() - 1));
+                            accessToJewel(this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() - 1));
                             //On ajoute le joyeau à la liste des joyeaux accessibles
                             //on ajoute la case à la liste des cases visitées
                             //on rappelle la fonction
@@ -448,14 +381,14 @@ public class Game {
                             break;
                         case "wall.IceWall":
                             this.casesAlreadyVisited.add(this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() - 1));
-                            turtleAccessToJewel(this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() - 1));
+                            accessToJewel(this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() - 1));
                             //on ajoute la case à la liste des cases visitées
                             //on rappelle la fonction
                             break;
                     }
                 } catch (NullPointerException e) {
                     this.casesAlreadyVisited.add(this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() - 1));
-                    turtleAccessToJewel(this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() - 1));
+                    accessToJewel(this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() - 1));
                     //on ajoute la case à la liste des cases visitées
                     //on rappelle la fonction
                 }
@@ -471,14 +404,14 @@ public class Game {
                     switch (this.getGrid().getCase(cas.getPositionX() + 1, cas.getPositionY()).getContents().getClass().getName()) {
                         case "game.other.Player":
                             this.casesAlreadyVisited.add(this.getGrid().getCase(cas.getPositionX() + 1, cas.getPositionY()));
-                            turtleAccessToJewel(this.getGrid().getCase(cas.getPositionX() + 1, cas.getPositionY()));
+                            accessToJewel(this.getGrid().getCase(cas.getPositionX() + 1, cas.getPositionY()));
                             //on ajoute la case à la liste des cases visitées
                             //on rappelle la fonction
                             break;
                         case "grid.Jewel":
                             this.jewelsToReach.add(this.getGrid().getCase(cas.getPositionX() + 1, cas.getPositionY()).getContents());
                             this.casesAlreadyVisited.add(this.getGrid().getCase(cas.getPositionX() + 1, cas.getPositionY()));
-                            turtleAccessToJewel(this.getGrid().getCase(cas.getPositionX() + 1, cas.getPositionY()));
+                            accessToJewel(this.getGrid().getCase(cas.getPositionX() + 1, cas.getPositionY()));
                             //On ajoute le joyeau à la liste des joyeaux accessibles
                             //on ajoute la case à la liste des cases visitées
                             //on rappelle la fonction
@@ -488,14 +421,14 @@ public class Game {
                             break;
                         case "wall.IceWall":
                             this.casesAlreadyVisited.add(this.getGrid().getCase(cas.getPositionX() + 1, cas.getPositionY()));
-                            turtleAccessToJewel(this.getGrid().getCase(cas.getPositionX() + 1, cas.getPositionY()));
+                            accessToJewel(this.getGrid().getCase(cas.getPositionX() + 1, cas.getPositionY()));
                             //on ajoute la case à la liste des cases visitées
                             //on rappelle la fonction
                             break;
                     }
                 } catch (NullPointerException e) {
                     this.casesAlreadyVisited.add(this.getGrid().getCase(cas.getPositionX() + 1, cas.getPositionY()));
-                    turtleAccessToJewel(this.getGrid().getCase(cas.getPositionX() + 1, cas.getPositionY()));
+                    accessToJewel(this.getGrid().getCase(cas.getPositionX() + 1, cas.getPositionY()));
                     //on ajoute la case à la liste des cases visitées
                     //on rappelle la fonction
                 }
@@ -512,14 +445,14 @@ public class Game {
                     switch (this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() + 1).getContents().getClass().getName()) {
                         case "game.other.Player":
                             this.casesAlreadyVisited.add(this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() + 1));
-                            turtleAccessToJewel(this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() + 1));
+                            accessToJewel(this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() + 1));
                             //on ajoute la case à la liste des cases visitées
                             //on rappelle la fonction
                             break;
                         case "grid.Jewel":
                             this.jewelsToReach.add(this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() + 1).getContents());
                             this.casesAlreadyVisited.add(this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() + 1));
-                            turtleAccessToJewel(this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() + 1));
+                            accessToJewel(this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() + 1));
                             //On ajoute le joyeau à la liste des joyeaux accessibles
                             //on ajoute la case à la liste des cases visitées
                             //on rappelle la fonction
@@ -529,20 +462,38 @@ public class Game {
                             break;
                         case "wall.IceWall":
                             this.casesAlreadyVisited.add(this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() + 1));
-                            turtleAccessToJewel(this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() + 1));
+                            accessToJewel(this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() + 1));
                             //on ajoute la case à la liste des cases visitées
                             //on rappelle la fonction
                             break;
                     }
                 } catch (NullPointerException e) {
                     this.casesAlreadyVisited.add(this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() + 1));
-                    turtleAccessToJewel(this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() + 1));
+                    accessToJewel(this.getGrid().getCase(cas.getPositionX(), cas.getPositionY() + 1));
                     //on ajoute la case à la liste des cases visitées
                     //on rappelle la fonction
                 }
             }
         } catch (Exception e) {
             //on est hors du plateau
+        }
+    }
+
+    public boolean playersCanAccessTojewel(){
+
+        for (int i = 0; i < this.getNumberOfplayer(); i++){
+            this.jewelsToReach.clear();
+            this.casesAlreadyVisited.clear();
+            accessToJewel(this.getGrid().getCase(getPlayerPositionX(this.getPlayer(i)), getPlayerPositionY(this.getPlayer(i))));
+            if (this.getNumberOfplayer() == 2 && this.jewelsToReach.size()!=1){
+                return false;
+            }
+            if(this.getNumberOfplayer() == 3 && this.jewelsToReach.size()!=3){
+                return false;
+            }
+            if(this.getNumberOfplayer() == 4 && this.jewelsToReach.size()!=2){
+                return false;
+            }
         }
         return true;
     }

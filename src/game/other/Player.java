@@ -88,6 +88,24 @@ public class Player {
         return this.wallsAvailable;
     }
 
+    public void takeIceWall(){
+        for(int i = 0; i<this.getWallsAvailable().size(); i++){
+            if (this.getWallsAvailable().get(i).getName().equals("ice wall")){
+                this.getWallsAvailable().remove(i);
+                break;
+            }
+        }
+    }
+
+    public void takeStoneWall(){
+        for(int i = 0; i<this.getWallsAvailable().size(); i++){
+            if (this.getWallsAvailable().get(i).getName().equals("stone wall")){
+                this.getWallsAvailable().remove(i);
+                break;
+            }
+        }
+    }
+
     public ArrayList<Card> getHandCards() {
         return this.handCards;
     }
@@ -116,28 +134,100 @@ public class Player {
         nbPlayer = 0;
     }
 
-    public boolean playIceWall() {
-        boolean test = false;
+    public boolean canPlayIceWall() {
         for (int i = 0; i < this.getWallsAvailable().size(); i++) {
             if (this.getWallsAvailable().get(i).getName().equals("ice wall")) {
-                test = true;
-                this.getWallsAvailable().remove(i);
                 return true;
             }
         }
         return false;
     }
 
-    public boolean playStoneWall() {
+    public boolean canPlayStoneWall() {
         boolean test = false;
         for (int i = 0; i < this.getWallsAvailable().size(); i++) {
             if (this.getWallsAvailable().get(i).getName().equals("stone wall")) {
-                test = true;
-                this.getWallsAvailable().remove(i);
                 return true;
             }
         }
         return false;
+    }
+
+    public void buildWall(Game game) {
+        int choice;
+        int choiceX;
+        int choiceY;
+        boolean correctPlacement = false;
+
+        if(this.canPlayIceWall() && this.canPlayStoneWall()){
+            System.out.println("1 : build ice wall\n2 : build stone wall");
+            do {
+                choice = this.scanner.nextInt();
+                this.scanner.nextLine();
+            } while (choice < 1 || choice > 2);
+        }
+        else if (this.canPlayStoneWall()){
+            System.out.println("You can only play a stone wall:");
+            choice = 2;
+        }
+        else{
+            System.out.println("You can only play an ice wall:");
+            choice = 1;
+        }
+
+        do {
+            System.out.println("Enter the position: ");
+            System.out.printf("x : ");
+            do {
+                choiceX = this.scanner.nextInt();
+                this.scanner.nextLine();
+            } while (choiceX > 7 || choiceX < 0);
+            System.out.printf("y : ");
+            do {
+                choiceY = this.scanner.nextInt();
+                this.scanner.nextLine();
+            } while (choiceY > 7 || choiceX < 0);
+            try {
+                String display = game.getGrid().getCase(choiceX, choiceY).getContents().getClass().getName();
+                switch (display) {
+                    case "game.other.Player":
+                        correctPlacement = false;
+                        System.out.println("impossible placement, a player is on this case");
+                        break;
+                    case "grid.Jewel":
+                        correctPlacement = false;
+                        System.out.println("impossible placement, a jewel is on this case");
+                        break;
+                    case "wall.StoneWall":
+                        correctPlacement = false;
+                        System.out.println("impossible placement, a stone wall is on this case");
+                        break;
+                    case "wall.IceWall":
+                        correctPlacement = false;
+                        System.out.println("impossible placement, an ice wall is on this case");
+                        break;
+                }
+            } catch (NullPointerException e) {
+                if (choice == 1) {
+                    game.getGrid().getCase(choiceX, choiceY).setContents(new IceWall());
+                    takeIceWall();
+                    correctPlacement = true;
+                }
+                if (choice == 2) {
+                    game.getGrid().getCase(choiceX, choiceY).setContents(new StoneWall());
+                    if(game.playersCanAccessTojewel()){
+                        takeStoneWall();
+                        correctPlacement = true;
+                    }
+                    else {
+                        System.out.println("impossible placement, the wall prevents the player from reaching the jewel");
+                        game.getGrid().getCase(choiceX, choiceY).setContents(null);
+                        correctPlacement = false;
+                    }
+                }
+
+            }
+        } while (correctPlacement == false);
     }
 
     public void fillProgram() {
@@ -160,6 +250,15 @@ public class Player {
             }
         } while (choice != 0 && counter != 1);
     }
+
+    public void playProgram(Game game){
+        for (Card card : this.getPlayerProgram().getProgram()) {
+            card.playCard(game);
+            this.getPlayerDeck().addCardToDiscard(card);
+        }
+        this.getPlayerProgram().resetProgram();
+    }
+
 
     public void putHandCardToDiscard() {
         int choice;
