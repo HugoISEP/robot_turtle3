@@ -1,7 +1,5 @@
 package card;
 
-import game.other.Game;
-
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,7 +39,7 @@ public class Deck {
         return this.deck;
     }
 
-    public ArrayList<Card> getDiscard(){
+    public ArrayList<Card> getDiscard() {
         return this.discard;
     }
 
@@ -49,14 +47,14 @@ public class Deck {
         this.deck_for_shuffle = new ArrayList<>(deck_for_shuffle);
     }
 
-    public void addCardToDiscard (Card card){
+    public void addCardToDiscard(Card card) {
         this.discard.add(card);
     }
 
     //quand le deck est vide, on le remplit à partir de la défausse
-    public void fillDeck(){
+    public void fillDeck() {
         this.deck_for_shuffle.clear();
-        for(int i=0; i < this.discard.size(); i++){
+        for (int i = 0; i < this.discard.size(); i++) {
             this.deck_for_shuffle.add(this.discard.get(i));
         }
         this.discard.clear();
@@ -70,9 +68,10 @@ public class Deck {
             this.deck.addFirst(this.deck_for_shuffle.get(i));
         }
     }
+
     //a revoir
-    public Card pickACard(){
-        if(this.deck.peekFirst() == null){
+    public Card pickACard() {
+        if (this.deck.peekFirst() == null) {
             fillDeck();
         }
         return this.deck.pollFirst();

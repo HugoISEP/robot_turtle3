@@ -2,8 +2,6 @@ package card;
 
 import game.other.Game;
 import game.other.OrientationEnum;
-import game.other.Player;
-import grid.Grid;
 
 public class LaserCard extends Card {
 
@@ -20,7 +18,7 @@ public class LaserCard extends Card {
         if (game.getCurrentPlayer().getOrientation().equals(OrientationEnum.NORTH)) {
             if (y != 0) {
                 //on parcours la grille à partir de la case au dessus du joueur
-                for (int i = y-1; i >= 0; i--) {
+                for (int i = y - 1; i >= 0; i--) {
                     try {
                         //Si le laser est réfléchi
                         //on récupère le contenu de la case dans display
@@ -94,9 +92,7 @@ public class LaserCard extends Card {
                     }
                 }
             }
-        }
-
-        else if (game.getCurrentPlayer().getOrientation().equals(OrientationEnum.SOUTH)) {
+        } else if (game.getCurrentPlayer().getOrientation().equals(OrientationEnum.SOUTH)) {
             if (y < 7) {
 
                 for (int i = y + 1; i <= 7; i++) {
@@ -166,12 +162,10 @@ public class LaserCard extends Card {
                     }
                 }
             }
-        }
-
-        else if (game.getCurrentPlayer().getOrientation().equals(OrientationEnum.WEST)) {
+        } else if (game.getCurrentPlayer().getOrientation().equals(OrientationEnum.WEST)) {
             if (x != 0) {
 
-                for (int i = x -1; i >= 0; i++) {
+                for (int i = x - 1; i >= 0; i++) {
                     try {
                         if (laserReflect == true) {
                             display = game.getGrid().getCase(7 - i, y).getContents().getClass().getName();
@@ -183,10 +177,10 @@ public class LaserCard extends Card {
                                 for (int j = 0; j < game.getNumberOfplayer(); j++) {
                                     if (laserReflect == true) {
                                         //retourne à sa case ou change de sens
-                                        if (game.getPlayer(j).equals(game.getGrid().getCase(7-i, y).getContents()) && game.getNumberOfplayer() > 2) {
+                                        if (game.getPlayer(j).equals(game.getGrid().getCase(7 - i, y).getContents()) && game.getNumberOfplayer() > 2) {
                                             game.goToDeparturePosition(game.getPlayer(j));
                                         }
-                                        if (game.getPlayer(j).equals(game.getGrid().getCase(7-i, y).getContents()) && game.getNumberOfplayer() == 2) {
+                                        if (game.getPlayer(j).equals(game.getGrid().getCase(7 - i, y).getContents()) && game.getNumberOfplayer() == 2) {
                                             if (game.getPlayer(j).getOrientation().equals(OrientationEnum.NORTH)) {
                                                 game.getPlayer(j).setOrientation(OrientationEnum.SOUTH);
                                             }
@@ -220,27 +214,25 @@ public class LaserCard extends Card {
                                         }
                                     }
                                 }
-                                i = - 1;
+                                i = -1;
                                 break;
                             case "grid.Jewel":
                                 laserReflect = true;
                                 i = 7 - i;
                                 break;
                             case "wall.StoneWall":
-                                i = - 1;
+                                i = -1;
                                 break;
                             case "wall.IceWall":
                                 game.getGrid().getCase(x, i).setContents(null);
-                                i = - 1;
+                                i = -1;
                                 break;
                         }
                     } catch (NullPointerException e) {
                     }
                 }
             }
-        }
-
-        else if (game.getCurrentPlayer().getOrientation().equals(OrientationEnum.EAST)) {
+        } else if (game.getCurrentPlayer().getOrientation().equals(OrientationEnum.EAST)) {
             if (x < 7) {
 
                 for (int i = x + 1; i <= 7; i++) {
@@ -255,10 +247,10 @@ public class LaserCard extends Card {
                                 for (int j = 0; j < game.getNumberOfplayer(); j++) {
                                     if (laserReflect == true) {
                                         //retourne à sa case ou change de sens
-                                        if (game.getPlayer(j).equals(game.getGrid().getCase(7-i, y).getContents()) && game.getNumberOfplayer() > 2) {
+                                        if (game.getPlayer(j).equals(game.getGrid().getCase(7 - i, y).getContents()) && game.getNumberOfplayer() > 2) {
                                             game.goToDeparturePosition(game.getPlayer(j));
                                         }
-                                        if (game.getPlayer(j).equals(game.getGrid().getCase(7-i, y).getContents()) && game.getNumberOfplayer() == 2) {
+                                        if (game.getPlayer(j).equals(game.getGrid().getCase(7 - i, y).getContents()) && game.getNumberOfplayer() == 2) {
                                             if (game.getPlayer(j).getOrientation().equals(OrientationEnum.NORTH)) {
                                                 game.getPlayer(j).setOrientation(OrientationEnum.SOUTH);
                                             }

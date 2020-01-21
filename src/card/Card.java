@@ -1,7 +1,6 @@
 package card;
 
 import game.other.Game;
-import game.other.Player;
 
 public class Card {
 

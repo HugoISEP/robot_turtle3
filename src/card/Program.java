@@ -1,7 +1,5 @@
 package card;
 
-import game.other.Game;
-
 import java.util.ArrayDeque;
 
 public class Program {
@@ -15,8 +13,8 @@ public class Program {
         return this.program;
     }
 
-    public void resetProgram(){
-        this.program = new ArrayDeque<>();
+    public void resetProgram() {
+        this.program.clear();
     }
 
     public void addACard(Card card) {

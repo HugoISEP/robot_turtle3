@@ -1,10 +1,8 @@
 package game.other;
 
-import card.Card;
 import grid.Case;
 import grid.Grid;
 import grid.Jewel;
-import wall.IceWall;
 import wall.StoneWall;
 
 import java.util.ArrayList;
@@ -16,33 +14,33 @@ public class Game {
     private static boolean endGame;
     private int numberOfplayer;
     private int numberOfCurrentPlayer;
-    private Player[] players;
-    private Player winnerPlayer;
+    private boolean playerHasFinished;
+    private ArrayList<Player> players;
+    private ArrayList<Player> winnerPlayers;
     private ArrayList<Case> departurePosition;
     private Grid grid;
-    private ArrayList<Object> jewelsToReach = new ArrayList<>();
-    private ArrayList<Case> casesAlreadyVisited = new ArrayList<>();
+    private ArrayList<Object> jewelsToReach;
+    private ArrayList<Case> casesAlreadyVisited;
 
     public Game() {
         endGame = false;
         this.grid = new Grid();
         this.departurePosition = new ArrayList<>();
-        this.winnerPlayer = new Player();
-        this.initialization();
+        this.players = new ArrayList<>();
+        this.jewelsToReach = new ArrayList<>();
+        this.casesAlreadyVisited = new ArrayList<>();
+        this.newGameInitialization();
+        this.winnerPlayers = new ArrayList<>();
         this.numberOfCurrentPlayer = new Random().nextInt(numberOfplayer);
         this.getCurrentPlayer().resetNbPlayer();
     }
 
-    public ArrayList<Object> getJewelsToReach(){
-        return this.jewelsToReach;
-    }
-
-    public Player[] getPlayers() {
+    public ArrayList<Player> getPlayers() {
         return this.players;
     }
 
     public Player getPlayer(int number) {
-        return this.players[number];
+        return this.players.get(number);
     }
 
     public int getNumberOfplayer() {
@@ -53,24 +51,12 @@ public class Game {
         return this.endGame;
     }
 
-    public Player getWinnerPlayer() {
-        return this.winnerPlayer;
-    }
-
-    public void setWinnerPlayer(Player player) {
-        this.winnerPlayer = player;
-    }
-
     public void setEndGame(boolean endGame) {
         this.endGame = endGame;
     }
 
-    public void setPlayer(int number, String name, ColorEnum color) {
-        this.players[number] = new Player(name, color);
-    }
-
     public Player getCurrentPlayer() {
-        return this.players[this.numberOfCurrentPlayer];
+        return this.players.get(this.numberOfCurrentPlayer);
     }
 
     public Grid getGrid() {
@@ -86,13 +72,18 @@ public class Game {
     }
 
     public void endTurn() {
-        if (this.numberOfCurrentPlayer == this.numberOfplayer - 1) {
+        if (this.playerHasFinished) {
+            this.players.remove(this.getNumberOfCurrentPlayer()); //on enlève le joueur de la liste de joueur en train de jouer
+            this.numberOfCurrentPlayer--; //pour ne pas sauter le tour du joueur prochain
+            this.playerHasFinished = false;
+        }
+        if (this.numberOfCurrentPlayer == this.players.size() - 1) {
             this.numberOfCurrentPlayer = -1;
         }
         numberOfCurrentPlayer++;
     }
 
-    public void initialization() {
+    public void newGameInitialization() {
         ArrayList<Integer> colorAlreadyTaken = new ArrayList<>();
         int nbJoueur;
 
@@ -102,7 +93,6 @@ public class Game {
             scanner.nextLine();
         } while (nbJoueur > 4 || nbJoueur < 2);
         this.numberOfplayer = nbJoueur;
-        this.players = new Player[this.numberOfplayer];
         //Création de la liste de joueurs
         for (int i = 1; i <= nbJoueur; i++) {
             System.out.println("name of the player " + i + " :");
@@ -148,16 +138,40 @@ public class Game {
                 default:
                     color = ColorEnum.GREEN;
             }
-            this.setPlayer(i - 1, name, color);
+            this.players.add(new Player(name, color));
         }
         this.gameBoardInitialization();
     }
 
+    public void replay() {
+        int indice;
+        Player playerswap;
+        //on remet les joueurs gagnants dans la liste des joueurs pouvant jouer
+        for (int i = 0; i < this.winnerPlayers.size(); i++) {
+            this.players.add(this.winnerPlayers.get(i));
+        }
+
+        //on trie cette liste des joueurs comme à la première partie
+        for (int i = 0; i < this.players.size(); i++) {
+            indice = i;
+            for (int j = i; j < this.players.size(); j++) {
+                if (this.players.get(indice).getNbOfPlayer() > this.players.get(j).getNbOfPlayer()) {
+                    indice = j;
+                }
+            }
+            playerswap = this.players.get(i);
+            this.players.add(i, this.players.get(indice));
+            this.players.add(indice, playerswap);
+        }
+        //on initialie le plateau
+        gameBoardInitialization();
+    }
+
     private void gameBoardInitialization() {
         if (this.numberOfplayer == 2) {
-            this.grid.getCase(1, 0).setContents(this.players[0]);
+            this.grid.getCase(1, 0).setContents(this.players.get(0));
             this.departurePosition.add(0, this.grid.getCase(1, 0));
-            this.grid.getCase(5, 0).setContents(this.players[1]);
+            this.grid.getCase(5, 0).setContents(this.players.get(1));
             this.departurePosition.add(1, this.grid.getCase(5, 0));
             for (int y = 0; y < 8; y++) {
                 this.grid.getCase(7, y).setContents(new StoneWall());
@@ -166,11 +180,11 @@ public class Game {
         }
 
         if (this.numberOfplayer == 3) {
-            this.grid.getCase(0, 0).setContents(this.players[0]);
+            this.grid.getCase(0, 0).setContents(this.players.get(0));
             this.departurePosition.add(0, this.grid.getCase(0, 0));
-            this.grid.getCase(3, 0).setContents(this.players[1]);
+            this.grid.getCase(3, 0).setContents(this.players.get(1));
             this.departurePosition.add(1, this.grid.getCase(3, 0));
-            this.grid.getCase(6, 0).setContents(this.players[2]);
+            this.grid.getCase(6, 0).setContents(this.players.get(2));
             this.departurePosition.add(2, this.grid.getCase(6, 0));
             for (int y = 0; y < 8; y++) {
                 this.grid.getCase(7, y).setContents(new StoneWall());
@@ -181,13 +195,13 @@ public class Game {
         }
 
         if (this.numberOfplayer == 4) {
-            this.grid.getCase(0, 0).setContents(this.players[0]);
+            this.grid.getCase(0, 0).setContents(this.players.get(0));
             this.departurePosition.add(0, this.grid.getCase(0, 0));
-            this.grid.getCase(2, 0).setContents(this.players[1]);
+            this.grid.getCase(2, 0).setContents(this.players.get(1));
             this.departurePosition.add(1, this.grid.getCase(2, 0));
-            this.grid.getCase(5, 0).setContents(this.players[2]);
+            this.grid.getCase(5, 0).setContents(this.players.get(2));
             this.departurePosition.add(2, this.grid.getCase(5, 0));
-            this.grid.getCase(7, 0).setContents(this.players[3]);
+            this.grid.getCase(7, 0).setContents(this.players.get(3));
             this.departurePosition.add(3, this.grid.getCase(7, 0));
 
             this.grid.getCase(1, 7).setContents(new Jewel());
@@ -198,7 +212,7 @@ public class Game {
     public void gameBoardDisplay() {
         System.out.println("Press enter to continue....");
         scanner.nextLine();
-        System.out.println("-----PLAYER " + (this.getNumberOfCurrentPlayer() + 1) + "-----");
+        System.out.println("-----PLAYER " + (this.getCurrentPlayer().getNbOfPlayer() + 1) + "-----");
 
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
@@ -225,7 +239,7 @@ public class Game {
             System.out.println();
         }
         for (Player player : this.getPlayers()) {
-            System.out.println("player " + (player.getNbOfPlayer() +1) + " : " + player.getOrientation() + "  |   position : (" + this.getPlayerPositionX(player)+","+this.getPlayerPositionY(player)+")");
+            System.out.println("player " + (player.getNbOfPlayer() + 1) + " : " + player.getOrientation() + "  |   position : (" + this.getPlayerPositionX(player) + "," + this.getPlayerPositionY(player) + ")");
         }
         System.out.println();
         System.out.println("YOUR WALLS : ");
@@ -238,6 +252,13 @@ public class Game {
             System.out.println(i + 1 + " : " + this.getCurrentPlayer().getHandCards().get(i).getName());
         }
         System.out.println();
+    }
+
+    public void scoresDisplay() {
+        System.out.println("----- SCORES -----");
+        for (int i = 0; i < this.players.size(); i++) {
+            System.out.println(this.players.get(i).getName() + " : " + this.players.get(i).getScore());
+        }
     }
 
     public void makeChoice() {
@@ -260,7 +281,7 @@ public class Game {
                     actionPlayed = true;
                     break;
                 case 3:
-                    if (this.getCurrentPlayer().canPlayStoneWall() || this.getCurrentPlayer().canPlayIceWall()){
+                    if (this.getCurrentPlayer().canPlayStoneWall() || this.getCurrentPlayer().canPlayIceWall()) {
                         this.getCurrentPlayer().buildWall(this);
                         actionPlayed = true;
                     } else {
@@ -270,7 +291,7 @@ public class Game {
                     break;
             }
         } while (actionPlayed == false);
-        if (getCurrentPlayer().getHandCards().size() != 0) {
+        if (getCurrentPlayer().getHandCards().size() != 0 && !this.playerHasFinished) {
             System.out.println("Do you want to discard some cards in your hands ?\n1 : yes\n2 : no");
             do {
                 choice = scanner.nextInt();
@@ -304,6 +325,46 @@ public class Game {
             }
         }
         return y;
+    }
+
+    public void playerHasWon() {
+        this.winnerPlayers.add(this.getCurrentPlayer());
+        if (this.numberOfplayer == 4) {
+            switch (this.winnerPlayers.size()) {
+                case 1:
+                    this.getCurrentPlayer().setScore((this.getCurrentPlayer().getScore() + 3));
+                    System.out.println("Player " + (this.getCurrentPlayer().getNbOfPlayer() + 1) + " has reached a jewel !");
+                    break;
+                case 2:
+                    this.getCurrentPlayer().setScore((this.getCurrentPlayer().getScore() + 2));
+                    System.out.println("Player " + (this.getCurrentPlayer().getNbOfPlayer() + 1) + " has reached a jewel !");
+                    break;
+                case 3:
+                    this.getCurrentPlayer().setScore((this.getCurrentPlayer().getScore() + 1));
+                    System.out.println("Player " + (this.getCurrentPlayer().getNbOfPlayer() + 1) + " has reached a jewel !");
+                    this.setEndGame(true);
+                    break;
+            }
+        } else if (this.numberOfplayer == 3) {
+            switch (this.winnerPlayers.size()) {
+                case 1:
+                    this.getCurrentPlayer().setScore((this.getCurrentPlayer().getScore() + 2));
+                    System.out.println("Player " + (this.getCurrentPlayer().getNbOfPlayer() + 1) + " has reached a jewel !");
+                    break;
+                case 2:
+                    this.getCurrentPlayer().setScore((this.getCurrentPlayer().getScore() + 1));
+                    System.out.println("Player " + (this.getCurrentPlayer().getNbOfPlayer() + 1) + " has reached a jewel !");
+                    this.setEndGame(true);
+                    break;
+            }
+        } else {
+            this.getCurrentPlayer().setScore((this.getCurrentPlayer().getScore() + 1));
+            System.out.println("Player " + (this.getCurrentPlayer().getNbOfPlayer() + 1) + " has reached a jewel !");
+
+            this.setEndGame(true);
+        }
+        this.playerHasFinished = true;
+        this.getCurrentPlayer().getPlayerProgram().resetProgram();
     }
 
     public void goToDeparturePosition(Player player) {
@@ -479,20 +540,27 @@ public class Game {
         }
     }
 
-    public boolean playersCanAccessTojewel(){
-
-        for (int i = 0; i < this.getNumberOfplayer(); i++){
-            this.jewelsToReach.clear();
-            this.casesAlreadyVisited.clear();
-            accessToJewel(this.getGrid().getCase(getPlayerPositionX(this.getPlayer(i)), getPlayerPositionY(this.getPlayer(i))));
-            if (this.getNumberOfplayer() == 2 && this.jewelsToReach.size()!=1){
-                return false;
-            }
-            if(this.getNumberOfplayer() == 3 && this.jewelsToReach.size()!=3){
-                return false;
-            }
-            if(this.getNumberOfplayer() == 4 && this.jewelsToReach.size()!=2){
-                return false;
+    public boolean playersCanAccessTojewel() {
+        //On regarde si chaque joueur peut atteindre le joyau
+        for (int i = 0; i < this.getNumberOfplayer(); i++) {
+            //on regarde la case ou le joueur se trouve et sa case départ
+            for (int j = 0; j < 2; j++) {
+                this.jewelsToReach.clear();
+                this.casesAlreadyVisited.clear();
+                if (j % 2 == 0) {
+                    accessToJewel(this.getGrid().getCase(getPlayerPositionX(this.getPlayer(i)), getPlayerPositionY(this.getPlayer(i))));
+                } else {
+                    accessToJewel(this.getGrid().getCase(this.getDeparturePosition().get(this.getPlayer(i).getNbOfPlayer()).getPositionX(), this.getDeparturePosition().get(this.getPlayer(i).getNbOfPlayer()).getPositionY()));
+                }
+                if (this.getNumberOfplayer() == 2 && this.jewelsToReach.size() != 1) {
+                    return false;
+                }
+                if (this.getNumberOfplayer() == 3 && this.jewelsToReach.size() != 3) {
+                    return false;
+                }
+                if (this.getNumberOfplayer() == 4 && this.jewelsToReach.size() != 2) {
+                    return false;
+                }
             }
         }
         return true;

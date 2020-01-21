@@ -7,9 +7,9 @@ public class Case {
     private int positionX;
     private int postionY;
 
-    public Case (){
+    public Case() {
         this.contents = null;
-        if (countX > 7){
+        if (countX > 7) {
             countX = 0;
             countY++;
         }
@@ -19,11 +19,11 @@ public class Case {
         countX++;
     }
 
-    public Object getContents(){
+    public Object getContents() {
         return this.contents;
     }
 
-    public void setContents(Object contents1){
+    public void setContents(Object contents1) {
         this.contents = contents1;
     }
 

@@ -2,8 +2,6 @@ package card;
 
 import game.other.Game;
 import game.other.OrientationEnum;
-import game.other.Player;
-import grid.Grid;
 
 public class BlueCard extends Card {
 
@@ -16,20 +14,18 @@ public class BlueCard extends Card {
         int x = game.getPlayerPositionX(game.getCurrentPlayer()), y = game.getPlayerPositionY(game.getCurrentPlayer());
 
         //conditions si le joueur va sortir du plateau
-        if ((x == 7 && game.getCurrentPlayer().getOrientation().equals(OrientationEnum.EAST)) || (x == 0 && game.getCurrentPlayer().getOrientation().equals(OrientationEnum.WEST)) || (y == 0 && game.getCurrentPlayer().getOrientation().equals(OrientationEnum.NORTH)) || (y == 7 && game.getCurrentPlayer().getOrientation().equals(OrientationEnum.SOUTH))){
+        if ((x == 7 && game.getCurrentPlayer().getOrientation().equals(OrientationEnum.EAST)) || (x == 0 && game.getCurrentPlayer().getOrientation().equals(OrientationEnum.WEST)) || (y == 0 && game.getCurrentPlayer().getOrientation().equals(OrientationEnum.NORTH)) || (y == 7 && game.getCurrentPlayer().getOrientation().equals(OrientationEnum.SOUTH))) {
             game.goToDeparturePosition(game.getCurrentPlayer());
-        }
-
-        else if (game.getCurrentPlayer().getOrientation().equals(OrientationEnum.EAST)){
+        } else if (game.getCurrentPlayer().getOrientation().equals(OrientationEnum.EAST)) {
             try {
                 //on regarde ce qu'il y a dans la case ou la tortue veut aller
                 String display = game.getGrid().getCase(x + 1, y).getContents().getClass().getName();
-                switch(display){
+                switch (display) {
                     case "game.other.Player":
                         //remettre à la case du début
                         //recherche du joueur sur la case d'après
-                        for (int i = 0; i < game.getNumberOfplayer(); i++){
-                            if (game.getPlayer(i) == game.getGrid().getCase(x + 1, y).getContents()){
+                        for (int i = 0; i < game.getNumberOfplayer(); i++) {
+                            if (game.getPlayer(i) == game.getGrid().getCase(x + 1, y).getContents()) {
                                 game.goToDeparturePosition(game.getPlayer(i));
                                 game.goToDeparturePosition(game.getCurrentPlayer());
                             }
@@ -38,9 +34,7 @@ public class BlueCard extends Card {
                     case "grid.Jewel":
                         //vainqueur
                         game.getGrid().getCase(x, y).setContents(null);
-                        game.getGrid().getCase(x + 1, y).setContents(game.getCurrentPlayer());
-                        game.setEndGame(true);
-                        game.setWinnerPlayer(game.getCurrentPlayer());
+                        game.playerHasWon();
                         break;
                     case "wall.StoneWall":
                         game.getCurrentPlayer().setOrientation(OrientationEnum.WEST);
@@ -49,20 +43,18 @@ public class BlueCard extends Card {
                         game.getCurrentPlayer().setOrientation(OrientationEnum.WEST);
                         break;
                 }
-            } catch (NullPointerException e){
+            } catch (NullPointerException e) {
                 game.getGrid().getCase(x, y).setContents(null);
                 game.getGrid().getCase(x + 1, y).setContents(game.getCurrentPlayer());
             }
-        }
-
-        else if (game.getCurrentPlayer().getOrientation().equals(OrientationEnum.WEST)){
+        } else if (game.getCurrentPlayer().getOrientation().equals(OrientationEnum.WEST)) {
             try {
                 String display = game.getGrid().getCase(x - 1, y).getContents().getClass().getName();
-                switch(display){
+                switch (display) {
                     case "game.other.Player":
                         //remettre à la case du début
-                        for (int i = 0; i < game.getNumberOfplayer(); i++){
-                            if (game.getPlayer(i) == game.getGrid().getCase(x - 1, y).getContents()){
+                        for (int i = 0; i < game.getNumberOfplayer(); i++) {
+                            if (game.getPlayer(i) == game.getGrid().getCase(x - 1, y).getContents()) {
                                 game.goToDeparturePosition(game.getPlayer(i));
                                 game.goToDeparturePosition(game.getCurrentPlayer());
                             }
@@ -71,9 +63,7 @@ public class BlueCard extends Card {
                     case "grid.Jewel":
                         //vainqueur
                         game.getGrid().getCase(x, y).setContents(null);
-                        game.getGrid().getCase(x - 1, y).setContents(game.getCurrentPlayer());
-                        game.setEndGame(true);
-                        game.setWinnerPlayer(game.getCurrentPlayer());
+                        game.playerHasWon();
                         break;
                     case "wall.StoneWall":
                         game.getCurrentPlayer().setOrientation(OrientationEnum.EAST);
@@ -82,20 +72,18 @@ public class BlueCard extends Card {
                         game.getCurrentPlayer().setOrientation(OrientationEnum.EAST);
                         break;
                 }
-            } catch (NullPointerException e){
+            } catch (NullPointerException e) {
                 game.getGrid().getCase(x, y).setContents(null);
                 game.getGrid().getCase(x - 1, y).setContents(game.getCurrentPlayer());
             }
-        }
-
-        else if (game.getCurrentPlayer().getOrientation().equals(OrientationEnum.NORTH)){
+        } else if (game.getCurrentPlayer().getOrientation().equals(OrientationEnum.NORTH)) {
             try {
                 String display = game.getGrid().getCase(x, y - 1).getContents().getClass().getName();
-                switch(display){
+                switch (display) {
                     case "game.other.Player":
                         //remettre à la case du début
-                        for (int i = 0; i < game.getNumberOfplayer(); i++){
-                            if (game.getPlayer(i) == game.getGrid().getCase(x, y - 1).getContents()){
+                        for (int i = 0; i < game.getNumberOfplayer(); i++) {
+                            if (game.getPlayer(i) == game.getGrid().getCase(x, y - 1).getContents()) {
                                 game.goToDeparturePosition(game.getPlayer(i));
                                 game.goToDeparturePosition(game.getCurrentPlayer());
                             }
@@ -104,9 +92,7 @@ public class BlueCard extends Card {
                     case "grid.Jewel":
                         //vainqueur
                         game.getGrid().getCase(x, y).setContents(null);
-                        game.getGrid().getCase(x, y - 1).setContents(game.getCurrentPlayer());
-                        game.setEndGame(true);
-                        game.setWinnerPlayer(game.getCurrentPlayer());
+                        game.playerHasWon();
                         break;
                     case "wall.StoneWall":
                         game.getCurrentPlayer().setOrientation(OrientationEnum.SOUTH);
@@ -115,20 +101,18 @@ public class BlueCard extends Card {
                         game.getCurrentPlayer().setOrientation(OrientationEnum.SOUTH);
                         break;
                 }
-            } catch (NullPointerException e){
+            } catch (NullPointerException e) {
                 game.getGrid().getCase(x, y).setContents(null);
                 game.getGrid().getCase(x, y - 1).setContents(game.getCurrentPlayer());
             }
-        }
-
-        else if (game.getCurrentPlayer().getOrientation().equals(OrientationEnum.SOUTH)){
+        } else if (game.getCurrentPlayer().getOrientation().equals(OrientationEnum.SOUTH)) {
             try {
                 String display = game.getGrid().getCase(x, y + 1).getContents().getClass().getName();
-                switch(display){
+                switch (display) {
                     case "game.other.Player":
                         //remettre à la case du début
-                        for (int i = 0; i < game.getNumberOfplayer(); i++){
-                            if (game.getPlayer(i) == game.getGrid().getCase(x, y + 1).getContents()){
+                        for (int i = 0; i < game.getNumberOfplayer(); i++) {
+                            if (game.getPlayer(i) == game.getGrid().getCase(x, y + 1).getContents()) {
                                 game.goToDeparturePosition(game.getPlayer(i));
                                 game.goToDeparturePosition(game.getCurrentPlayer());
                             }
@@ -137,9 +121,7 @@ public class BlueCard extends Card {
                     case "grid.Jewel":
                         //vainqueur
                         game.getGrid().getCase(x, y).setContents(null);
-                        game.getGrid().getCase(x, y + 1).setContents(game.getCurrentPlayer());
-                        game.setEndGame(true);
-                        game.setWinnerPlayer(game.getCurrentPlayer());
+                        game.playerHasWon();
                         break;
                     case "wall.StoneWall":
                         game.getCurrentPlayer().setOrientation(OrientationEnum.NORTH);
@@ -148,7 +130,7 @@ public class BlueCard extends Card {
                         game.getCurrentPlayer().setOrientation(OrientationEnum.NORTH);
                         break;
                 }
-            } catch (NullPointerException e){
+            } catch (NullPointerException e) {
                 game.getGrid().getCase(x, y).setContents(null);
                 game.getGrid().getCase(x, y + 1).setContents(game.getCurrentPlayer());
             }
