@@ -1,3 +1,5 @@
+package Interface_Graphique;
+
 import javax.swing.*;
 
 public class ZoneDeTexte extends JTextField {

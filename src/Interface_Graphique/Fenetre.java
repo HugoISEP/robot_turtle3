@@ -1,3 +1,5 @@
+package Interface_Graphique;
+
 import javafx.scene.control.Menu;
 
 import javax.imageio.ImageIO;

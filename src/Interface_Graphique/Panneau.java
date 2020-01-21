@@ -1,3 +1,5 @@
+package Interface_Graphique;
+
 import javafx.scene.layout.Background;
 
 import java.awt.*;
