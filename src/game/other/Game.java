@@ -111,8 +111,8 @@ public class Game {
         }
 
         //on enleve le contenu de toutes les cases
-        for (int i = 0; i < 7; i++){
-            for (int j = 0; j<7; j++){
+        for (int i = 0; i < 8; i++){
+            for (int j = 0; j<8; j++){
                 this.getGrid().getCase(j,i).setContents(null);
             }
         }

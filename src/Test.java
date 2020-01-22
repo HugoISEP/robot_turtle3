@@ -1,7 +1,4 @@
 import Interface_Graphique.Interface;
-import game.other.Game;
-
-import java.util.Scanner;
 
 public class Test {
 
