@@ -6,7 +6,7 @@ import game.other.OrientationEnum;
 public class PurpleCard extends Card {
 
     public PurpleCard() {
-        this.name = "purple card";
+        this.name = "PurpleCard";
     }
 
     public void playCard(Game gamer) {

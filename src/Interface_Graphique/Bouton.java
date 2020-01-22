@@ -35,6 +35,10 @@ public class Bouton extends JButton {
         //this.addMouseListener(this);
     }
 
+    public void setNbrMurRestant(String NbrRestant){
+        this.name = this.name + "(" + NbrRestant + ")";
+    }
+
     public String getName() {
         return this.name;
     }

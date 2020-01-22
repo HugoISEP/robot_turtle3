@@ -36,8 +36,7 @@ public class Label extends JLabel {
     }
 
     public void setContenu(String contenu) {
-        this.contenu = contenu;
-        System.out.println(this.contenu);
+        this.setText(contenu);
     }
 
     public void setQuestion(String prenom){

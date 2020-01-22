@@ -1,5 +1,6 @@
 package Interface_Graphique;
 
+import game.other.Game;
 import javafx.scene.control.Menu;
 
 import javax.imageio.ImageIO;
@@ -104,8 +105,9 @@ public class Fenetre extends JFrame implements ActionListener {
         this.ListeCarte.add(carte);
     }
 
-    public void AfficherCartes() {
+    public void AfficherCartes(Boolean b) {
         for (int i = 0; i < this.ListeCarte.size(); i++) {
+            this.ListeCarte.get(i).RendreCliquable(b);
             this.pannel.add(this.ListeCarte.get(i));
         }
     }
@@ -130,5 +132,9 @@ public class Fenetre extends JFrame implements ActionListener {
 
     public void reload(){
         this.repaint();
+    }
+
+    public void setPannelGame(Game game){
+        this.pannel.setGame(game);
     }
 }

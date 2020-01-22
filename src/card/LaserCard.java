@@ -6,7 +6,7 @@ import game.other.OrientationEnum;
 public class LaserCard extends Card {
 
     public LaserCard() {
-        this.name = "laser card";
+        this.name = "LaserCard";
     }
 
     public void playCard(Game game) {

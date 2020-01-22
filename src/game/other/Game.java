@@ -23,20 +23,31 @@ public class Game {
     private ArrayList<Case> casesAlreadyVisited;
 
     public Game() {
-        endGame = false;
+        this.endGame = false;
         this.grid = new Grid();
         this.departurePosition = new ArrayList<>();
         this.players = new ArrayList<>();
         this.jewelsToReach = new ArrayList<>();
         this.casesAlreadyVisited = new ArrayList<>();
-        this.newGameInitialization();
         this.winnerPlayers = new ArrayList<>();
-        this.numberOfCurrentPlayer = new Random().nextInt(numberOfplayer);
+    }
+
+    public void Initilisation(){
+        this.gameBoardInitialization();
+        this.numberOfCurrentPlayer = new Random().nextInt(this.numberOfplayer);
         this.getCurrentPlayer().resetNbPlayer();
+    }
+
+    public boolean getPlayerHasFinish(){
+        return this.playerHasFinished;
     }
 
     public ArrayList<Player> getPlayers() {
         return this.players;
+    }
+
+    public void AddPlayer(String name,ColorEnum color){
+        this.players.add(new Player(name,color));
     }
 
     public Player getPlayer(int number) {
@@ -53,6 +64,10 @@ public class Game {
 
     public void setEndGame(boolean endGame) {
         this.endGame = endGame;
+    }
+
+    public void setNumberOfplayer(int numberOfplayer) {
+        this.numberOfplayer = numberOfplayer;
     }
 
     public Player getCurrentPlayer() {
@@ -83,86 +98,31 @@ public class Game {
         numberOfCurrentPlayer++;
     }
 
-    public void newGameInitialization() {
-        ArrayList<Integer> colorAlreadyTaken = new ArrayList<>();
-        int nbJoueur;
-
-        System.out.println("How many players are you ?");
-        do {
-            nbJoueur = scanner.nextInt();
-            scanner.nextLine();
-        } while (nbJoueur > 4 || nbJoueur < 2);
-        this.numberOfplayer = nbJoueur;
-        //Création de la liste de joueurs
-        for (int i = 1; i <= nbJoueur; i++) {
-            System.out.println("name of the player " + i + " :");
-            String name = scanner.nextLine();
-            System.out.println("1 : BLUE\n2 : RED\n3 : PINK\n4 : GREEN");
-            System.out.println("color of the player " + i + " :");
-            int colorChoice = 1;
-            boolean colorTest = false;
-            do {
-                if (colorChoice < 1 || colorChoice > 4) {
-                    System.out.println("Your choice doesn't match with the proposals");
-                }
-                if (colorTest == true) {
-                    System.out.println("the color is already taken");
-                }
-                colorTest = false;
-                colorChoice = scanner.nextInt();
-                scanner.nextLine();
-                for (int test : colorAlreadyTaken) {
-                    if (test == colorChoice) {
-                        colorTest = true;
-                    }
-                }
-            } while (colorChoice < 1 || colorChoice > 4 || colorTest == true);
-            ColorEnum color;
-            OrientationEnum orientation;
-            switch (colorChoice) {
-                case 1:
-                    color = ColorEnum.BLUE;
-                    colorAlreadyTaken.add(colorChoice);
-                    break;
-                case 2:
-                    color = ColorEnum.RED;
-                    colorAlreadyTaken.add(colorChoice);
-                    break;
-                case 3:
-                    color = ColorEnum.PINK;
-                    colorAlreadyTaken.add(colorChoice);
-                    break;
-                case 4:
-                    color = ColorEnum.GREEN;
-                    colorAlreadyTaken.add(colorChoice);
-                default:
-                    color = ColorEnum.GREEN;
-            }
-            this.players.add(new Player(name, color));
-        }
-        this.gameBoardInitialization();
-    }
-
     public void replay() {
-        int indice;
-        Player playerswap;
+        this.setEndGame(false);
         //on remet les joueurs gagnants dans la liste des joueurs pouvant jouer
         for (int i = 0; i < this.winnerPlayers.size(); i++) {
             this.players.add(this.winnerPlayers.get(i));
         }
 
-        //on trie cette liste des joueurs comme à la première partie
-        for (int i = 0; i < this.players.size(); i++) {
-            indice = i;
-            for (int j = i; j < this.players.size(); j++) {
-                if (this.players.get(indice).getNbOfPlayer() > this.players.get(j).getNbOfPlayer()) {
-                    indice = j;
-                }
-            }
-            playerswap = this.players.get(i);
-            this.players.add(i, this.players.get(indice));
-            this.players.add(indice, playerswap);
+        //on créer un nouveau deck, on met à 0 le programme du joueur et il pioche 5 cartes
+        for (int i = 0; i < this.players.size(); i++){
+            this.players.get(i).playerInitialisation();
         }
+
+        //on enleve le contenu de toutes les cases
+        for (int i = 0; i < 7; i++){
+            for (int j = 0; j<7; j++){
+                this.getGrid().getCase(j,i).setContents(null);
+            }
+        }
+
+        //On remet à 0 les deux listes permettant de verifier si la pose d'un mur est possible
+        this.jewelsToReach.clear();
+        this.casesAlreadyVisited.clear();
+        this.playerHasFinished = false;
+        this.winnerPlayers.clear();
+
         //on initialie le plateau
         gameBoardInitialization();
     }
@@ -209,100 +169,6 @@ public class Game {
         }
     }
 
-    public void gameBoardDisplay() {
-        System.out.println("Press enter to continue....");
-        scanner.nextLine();
-        System.out.println("-----PLAYER " + (this.getCurrentPlayer().getNbOfPlayer() + 1) + "-----");
-
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                try {
-                    String display = this.getGrid().getCase(j, i).getContents().getClass().getName();
-                    switch (display) {
-                        case "game.other.Player":
-                            System.out.printf("P");
-                            break;
-                        case "grid.Jewel":
-                            System.out.printf("J");
-                            break;
-                        case "wall.StoneWall":
-                            System.out.printf("S");
-                            break;
-                        case "wall.IceWall":
-                            System.out.printf("I");
-                            break;
-                    }
-                } catch (NullPointerException e) {
-                    System.out.printf("_");
-                }
-            }
-            System.out.println();
-        }
-        for (Player player : this.getPlayers()) {
-            System.out.println("player " + (player.getNbOfPlayer() + 1) + " : " + player.getOrientation() + "  |   position : (" + this.getPlayerPositionX(player) + "," + this.getPlayerPositionY(player) + ")");
-        }
-        System.out.println();
-        System.out.println("YOUR WALLS : ");
-        for (int i = 0; i < this.getCurrentPlayer().getWallsAvailable().size(); i++) {
-            System.out.println(i + 1 + " : " + this.getCurrentPlayer().getWallsAvailable().get(i).getName());
-        }
-        System.out.println();
-        System.out.println("YOUR HANDCARDS : ");
-        for (int i = 0; i < this.getCurrentPlayer().getHandCards().size(); i++) {
-            System.out.println(i + 1 + " : " + this.getCurrentPlayer().getHandCards().get(i).getName());
-        }
-        System.out.println();
-    }
-
-    public void scoresDisplay() {
-        System.out.println("----- SCORES -----");
-        for (int i = 0; i < this.players.size(); i++) {
-            System.out.println(this.players.get(i).getName() + " : " + this.players.get(i).getScore());
-        }
-    }
-
-    public void makeChoice() {
-        int choice;
-        boolean actionPlayed = false;
-        System.out.println("YOUR CHOICE:\n1 : fill your program\n2 : play your program\n3 : build a wall");
-        do {
-            do {
-                choice = scanner.nextInt();
-                scanner.nextLine();
-            } while (choice > 3 || choice < 1);
-
-            switch (choice) {
-                case 1:
-                    this.getCurrentPlayer().fillProgram();
-                    actionPlayed = true;
-                    break;
-                case 2:
-                    this.getCurrentPlayer().playProgram(this);
-                    actionPlayed = true;
-                    break;
-                case 3:
-                    if (this.getCurrentPlayer().canPlayStoneWall() || this.getCurrentPlayer().canPlayIceWall()) {
-                        this.getCurrentPlayer().buildWall(this);
-                        actionPlayed = true;
-                    } else {
-                        System.out.println("You don't have any wall, chose another action");
-                        actionPlayed = false;
-                    }
-                    break;
-            }
-        } while (actionPlayed == false);
-        if (getCurrentPlayer().getHandCards().size() != 0 && !this.playerHasFinished) {
-            System.out.println("Do you want to discard some cards in your hands ?\n1 : yes\n2 : no");
-            do {
-                choice = scanner.nextInt();
-                scanner.nextLine();
-            } while (choice > 2 || choice < 1);
-            if (choice == 1) {
-                this.getCurrentPlayer().putHandCardToDiscard();
-            }
-        }
-    }
-
     public int getPlayerPositionX(Player player) {
         int x = 0;
         for (int i = 0; i < 8; i++) {
@@ -333,15 +199,12 @@ public class Game {
             switch (this.winnerPlayers.size()) {
                 case 1:
                     this.getCurrentPlayer().setScore((this.getCurrentPlayer().getScore() + 3));
-                    System.out.println("Player " + (this.getCurrentPlayer().getNbOfPlayer() + 1) + " has reached a jewel !");
                     break;
                 case 2:
                     this.getCurrentPlayer().setScore((this.getCurrentPlayer().getScore() + 2));
-                    System.out.println("Player " + (this.getCurrentPlayer().getNbOfPlayer() + 1) + " has reached a jewel !");
                     break;
                 case 3:
                     this.getCurrentPlayer().setScore((this.getCurrentPlayer().getScore() + 1));
-                    System.out.println("Player " + (this.getCurrentPlayer().getNbOfPlayer() + 1) + " has reached a jewel !");
                     this.setEndGame(true);
                     break;
             }
@@ -349,18 +212,14 @@ public class Game {
             switch (this.winnerPlayers.size()) {
                 case 1:
                     this.getCurrentPlayer().setScore((this.getCurrentPlayer().getScore() + 2));
-                    System.out.println("Player " + (this.getCurrentPlayer().getNbOfPlayer() + 1) + " has reached a jewel !");
                     break;
                 case 2:
                     this.getCurrentPlayer().setScore((this.getCurrentPlayer().getScore() + 1));
-                    System.out.println("Player " + (this.getCurrentPlayer().getNbOfPlayer() + 1) + " has reached a jewel !");
                     this.setEndGame(true);
                     break;
             }
         } else {
             this.getCurrentPlayer().setScore((this.getCurrentPlayer().getScore() + 1));
-            System.out.println("Player " + (this.getCurrentPlayer().getNbOfPlayer() + 1) + " has reached a jewel !");
-
             this.setEndGame(true);
         }
         this.playerHasFinished = true;
@@ -542,7 +401,7 @@ public class Game {
 
     public boolean playersCanAccessTojewel() {
         //On regarde si chaque joueur peut atteindre le joyau
-        for (int i = 0; i < this.getNumberOfplayer(); i++) {
+        for (int i = 0; i < this.players.size(); i++) {
             //on regarde la case ou le joueur se trouve et sa case départ
             for (int j = 0; j < 2; j++) {
                 this.jewelsToReach.clear();
@@ -566,7 +425,3 @@ public class Game {
         return true;
     }
 }
-
-
-
-

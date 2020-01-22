@@ -12,7 +12,8 @@ public class Deck {
     public Deck() {
         deck = new ArrayDeque<>();
         deck_for_shuffle = new ArrayList<>();  //permet juste de mélanger les cartes
-        discard = new ArrayList<>();
+        discard = new ArrayList<>();           //la défausse
+        //création du deck
         for (int i = 0; i < 18; i++) {
             this.deck_for_shuffle.add(new BlueCard());
         }
@@ -69,8 +70,8 @@ public class Deck {
         }
     }
 
-    //a revoir
     public Card pickACard() {
+        //on vérifie que le deck n'est pas vide sinon on le rempli à partir de la défausse
         if (this.deck.peekFirst() == null) {
             fillDeck();
         }
